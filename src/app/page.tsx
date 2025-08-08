@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTRPC } from "@/trpc/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const Page = () => {
@@ -11,7 +11,8 @@ const Page = () => {
   const [value, setValue] = useState("");
 
   const trpc = useTRPC();
-  const invoke = useMutation(trpc.invoke.mutationOptions({
+  const { data: messages } = useQuery(trpc.messages.getMany.queryOptions())
+  const createMessage = useMutation(trpc.messages.create.mutationOptions({
     onSuccess: (data) => {
       console.log("Background job invoked successfully:", data);
     }
@@ -22,9 +23,10 @@ const Page = () => {
       setValue(e.target.value)
       console.log("Input value changed:", e.target.value)
     }} />
-    <Button disabled={invoke.isPending} onClick={() => invoke.mutate({ value: value })}>
+    <Button disabled={createMessage.isPending} onClick={() => createMessage.mutate({ value: value })}>
       Invoke background job
     </Button>
+    {JSON.stringify(messages, null, 2)}
   </div>
 }
 
