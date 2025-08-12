@@ -31,7 +31,7 @@ export const codeAgentFunction = inngest.createFunction(
             description: "An exper coding agent",
             system: PROMPT,
             model: openai({
-                model: "gpt-4.1",
+                model: "gpt-4o",
                 defaultParameters: {
                     temperature: 0.,
                 }
@@ -89,7 +89,6 @@ export const codeAgentFunction = inngest.createFunction(
                                 }
                                 return updatedFiles;
                             } catch (error) {
-                                // Note: buffers is not defined in this scope - fixed
                                 console.error(`File operation failed: ${error}`);
                                 return `File operation failed: ${error}`;
                             }
@@ -97,7 +96,10 @@ export const codeAgentFunction = inngest.createFunction(
 
                         if (typeof newFiles === "object") {
                             network.state.data.files = newFiles;
+                            console.log("Updated files state:", newFiles);
                         }
+                        
+                        return `Successfully created/updated ${files.length} files`;
                     }
                 }),
                 createTool({
@@ -127,9 +129,12 @@ export const codeAgentFunction = inngest.createFunction(
                 onResponse: async ({ result, network }) => {
                     const lastMsgContent = lastAssistantTextMessageContent(result);
 
+                    console.log("Last assistant message:", lastMsgContent);
+
                     if (lastMsgContent && network) {
                         if (lastMsgContent.includes("<task_summary")) {
                             network.state.data.summary = lastMsgContent;
+                            console.log("Set summary:", lastMsgContent);
                         }
                     }
 
@@ -144,19 +149,34 @@ export const codeAgentFunction = inngest.createFunction(
             maxIter: 15, // how many loops the agent can do
             router: async ({ network }) => {
                 const summary = network.state.data.summary;
+                console.log("Router check - summary:", summary);
                 if (summary) {
+                    console.log("Router stopping - summary found");
                     return;
                 }
 
+                console.log("Router continuing - no summary yet");
                 return codeAgent;
             }
         })
 
-        // Run the agent with an input.  This automatically uses steps
+        // Initialize the network state
+        network.state.data = {
+            summary: "",
+            files: {}
+        };
+
+        // Run the agent with an input.  this automatically uses steps
         // to call your AI model.
         const result = await network.run(event.data.value);
 
-        const isError = result.state.data.summary || Object.keys(result.state.data.files || {}).length === 0;
+        console.log("Agent result:", {
+            summary: result.state.data.summary,
+            files: result.state.data.files,
+            filesCount: Object.keys(result.state.data.files || {}).length
+        });
+
+        const isError = !result.state.data.summary || Object.keys(result.state.data.files || {}).length === 0;
 
         const sandboxUrl = await step.run("get-sandbox-url", async () => {
             const sandbox = await getSandbox(sandboxId);
@@ -169,6 +189,7 @@ export const codeAgentFunction = inngest.createFunction(
             if (isError) {
                 return await prisma.message.create({
                     data: {
+                        projectId: event.data.projectId,
                         content: "Something went wrong, pls. try again.",
                         role: "ASSISTANT",
                         type: "RESULT",
@@ -177,6 +198,7 @@ export const codeAgentFunction = inngest.createFunction(
             }
             return await prisma.message.create({
                 data: {
+                    projectId: event.data.projectId,
                     content: result.state.data.summary || "No summary provided",
                     role: "ASSISTANT",
                     type: "RESULT",
@@ -191,11 +213,15 @@ export const codeAgentFunction = inngest.createFunction(
             })
         })
 
-        return {
+        const finalResult = {
             url: sandboxUrl,
             title: "Fragment",
             files: result.state.data.files,
             summary: result.state.data.summary
         };
+        
+        console.log("Final result:", finalResult);
+        
+        return finalResult;
     },
 );
