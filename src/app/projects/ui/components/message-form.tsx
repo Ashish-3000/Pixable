@@ -86,7 +86,7 @@ export const MessageForm = ({ projectId }: Props) => {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();
-                  form.handleSubmit(onSubmit);
+                  form.handleSubmit(onSubmit)();
                 }
               }}
             />
