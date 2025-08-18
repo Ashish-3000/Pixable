@@ -6,6 +6,7 @@ import { inngest } from "@/inngest/client";
 import { z } from "zod";
 import { generateSlug } from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
+import { consumeCredits } from "@/lib/usage";
 
 export const projectsRouter = createTRPCRouter({
     getOne: protectedProcedure.
@@ -42,7 +43,46 @@ export const projectsRouter = createTRPCRouter({
                 .min(1, "Value cannot be empty")
                 .max(10000, { message: "Value is too long" }),
         })
-    ).mutation(async ({ input,ctx }) => {
+    ).mutation(async ({ input, ctx }) => {
+        console.log("Project create mutation called"); // Debug log
+        console.log("User ID:", ctx.auth.userId); // Debug log
+
+        try {
+            console.log("Attempting to consume credits..."); // Debug log
+            await consumeCredits();
+            console.log("Credits consumed successfully"); // Debug log
+        } catch (error) {
+            console.error("Credit consumption failed:", error); // Debug log
+            
+            // Check the specific error type
+            if (error instanceof Error) {
+                console.error("Error message:", error.message); // Debug log
+                
+                // Check if it's a rate limit error from RateLimiterPrisma
+                if (error.message.includes("Too Many Requests") || 
+                    error.message.includes("Rate limit") ||
+                    error.name === "Error" && error.message.includes("points")) {
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS", 
+                        message: "You have run out of credits"
+                    });
+                }
+                
+                // For other errors, provide more specific message
+                throw new TRPCError({
+                    code: "BAD_REQUEST", 
+                    message: `Credit consumption failed: ${error.message}`
+                });
+            } else {
+                console.error("Unknown error type:", typeof error, error); // Debug log
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR", 
+                    message: "An unexpected error occurred"
+                });
+            }
+        }
+
+        console.log("Creating project..."); // Debug log
 
         const createdProject = await prisma.project.create({
             data: {
@@ -58,7 +98,9 @@ export const projectsRouter = createTRPCRouter({
                     }
                 }
             }
-        })
+        });
+
+        console.log("Project created:", createdProject.id); // Debug log
 
         await inngest.send({
             name: "code-agent/run",
@@ -66,7 +108,9 @@ export const projectsRouter = createTRPCRouter({
                 value: input.value,
                 projectId: createdProject.id,
             },
-        })
+        });
+
+        console.log("Inngest event sent"); // Debug log
 
         return createdProject;
     })

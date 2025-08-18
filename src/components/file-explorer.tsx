@@ -69,15 +69,11 @@ const FileBreadcrumb = ({ filePath }: FileBreadcrumbProps) => {
           <BreadcrumbItem>
             <span className="text-muted-foreground">{firstSegment}</span>
           </BreadcrumbItem>
-
           <BreadcrumbSeparator />
-
           <BreadcrumbItem>
             <BreadcrumbEllipsis />
           </BreadcrumbItem>
-
           <BreadcrumbSeparator />
-
           <BreadcrumbItem>
             <BreadcrumbPage className="font-medium">
               {lastSegment}

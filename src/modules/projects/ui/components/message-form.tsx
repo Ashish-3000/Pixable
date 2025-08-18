@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
+import { Usage } from "@/modules/projects/ui/components/usage";
+import { useRouter } from "next/navigation";
 
 interface Props {
   projectId: string;
@@ -26,6 +28,18 @@ const formSchema = z.object({
 export const MessageForm = ({ projectId }: Props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const {
+    data: usage,
+    error: usageError,
+    isLoading: usageLoading,
+  } = useQuery(trpc.usage.status.queryOptions());
+
+  // Debug logs
+  console.log("Usage data:", usage);
+  console.log("Usage error:", usageError);
+  console.log("Usage loading:", usageLoading);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,9 +55,13 @@ export const MessageForm = ({ projectId }: Props) => {
         queryClient.invalidateQueries(
           trpc.messages.getMany.queryOptions({ projectId })
         );
+        queryClient.invalidateQueries(trpc.usage.status.queryOptions());
       },
       onError: (error) => {
         toast.error(error.message);
+        if (error.data?.code === "TOO_MANY_REQUESTS") {
+          router.push("/pricing");
+        }
       },
     })
   );
@@ -56,12 +74,26 @@ export const MessageForm = ({ projectId }: Props) => {
   };
 
   const [isFocused, setIsFocused] = useState(false);
-  const showUsage = false;
+
+  // Show usage if we have data and no error
+  const showUsage = !!usage && !usageError;
   const isPending = createMessage.isPending;
   const isButtonDisabled = isPending || !form.formState.isValid;
 
+  // Show error message if usage query failed
+  if (usageError) {
+    console.error("Usage query failed:", usageError);
+    // You might want to show a toast or handle this differently
+  }
+
   return (
     <Form {...form}>
+      {showUsage && (
+        <Usage
+          points={usage.remainingPoints}
+          msBeforeNext={usage.msBeforeNext}
+        />
+      )}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn(
