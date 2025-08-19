@@ -1,4 +1,4 @@
-import { act, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { MessageCard } from "./message-card";

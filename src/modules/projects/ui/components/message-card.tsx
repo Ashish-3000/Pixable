@@ -3,7 +3,7 @@ import { Fragment, MessageRole, MessageType } from "@/generated/prisma";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { ChevronRight, ChevronRightIcon, Code2Icon } from "lucide-react";
+import { ChevronRightIcon, Code2Icon } from "lucide-react";
 
 interface UserMessageProps {
   content: string;

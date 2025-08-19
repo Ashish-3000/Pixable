@@ -15,9 +15,6 @@ export async function getUsageTracker() {
   const usageTracker = new RateLimiterPrisma({
     storeClient: prisma,
     tableName: "Usage", // Make sure this matches your @@map("Usage")
-    keyName: "key", // Explicitly specify the key field name
-    pointsName: "points", // Explicitly specify the points field name
-    expireName: "expire", // Explicitly specify the expire field name
     points: hasProAccess ? PRO_POINTS : FREE_POINTS,
     duration: DURATION,
   });

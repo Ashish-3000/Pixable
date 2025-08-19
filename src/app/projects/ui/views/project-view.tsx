@@ -12,10 +12,9 @@ import { MessagesContainer } from "../../../../modules/projects/ui/components/me
 import { Suspense } from "react";
 import { ProjectHeader } from "../components/project-header";
 import { FragmentWeb } from "../../../../modules/projects/ui/components/fragment-web";
-import { CodeIcon, Crown, CrownIcon, EyeIcon } from "lucide-react";
+import { CodeIcon, CrownIcon, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CodeView } from "@/components/code-view";
 import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
 import { useAuth } from "@clerk/nextjs";

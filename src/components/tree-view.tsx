@@ -2,7 +2,6 @@ import { TreeItem } from "@/types";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
