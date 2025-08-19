@@ -16,7 +16,9 @@ export const ProjectsList = () => {
 
   return (
     <div className="w-full bg-white dark:bg-sidebar rounded-xl p-8 border flex flex-col gap-y-6 sm:gap-y-4">
-      <h2 className="text-2xl font-semibold">{user?.firstName}&apos;s Vibes</h2>
+      <h2 className="text-2xl font-semibold">
+        {user?.firstName}&apos;s Pixables
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {projects?.length === 0 && (
           <div className="col-span-full text-center">
@@ -32,7 +34,7 @@ export const ProjectsList = () => {
           >
             <Link href={`/projects/${project.id}`}>
               <div className="flex items-center gap-x-4">
-                <Image src="/logo.svg" alt="Vibe" width={32} height={32} />
+                <Image src="/logo.svg" alt="Pixable" width={32} height={32} />
                 <div className="flex flex-col">
                   <h3 className="truncate font-medium">{project.name}</h3>
                   <p className="text-sm text-muted-foreground">

@@ -83,10 +83,10 @@ const AssistantMessage = ({
           src="/logo.svg"
           width={18}
           height={18}
-          alt="Vibe logo"
+          alt="Pixable logo"
           className="shrink-0"
         />
-        <span className="text-sm font-medium">Vibe</span>
+        <span className="text-sm font-medium">Pixable</span>
         <span className="text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           {format(createdAt, "HH:mm 'on' MM dd, yyyy")}
         </span>
