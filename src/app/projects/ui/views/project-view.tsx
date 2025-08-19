@@ -79,7 +79,7 @@ export const ProjectView = ({ projectId }: Props) => {
                     </Link>
                   </Button>
                 )}
-                <UserControl />
+                <UserControl showName={true} />
               </div>
             </div>
 
